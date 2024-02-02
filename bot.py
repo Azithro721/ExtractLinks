@@ -1,11 +1,6 @@
 import os
 import re
-from flask import Flask
-
 from pyrogram import Client, filters
-
-# Initialize Flask app
-app = Flask(__name__)
 
 # Initialize the bot
 API_ID = os.getenv("API_ID")
@@ -13,6 +8,7 @@ API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 bot = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+print("Bot Started")  # Print "Bot Started" right after bot initialization
 
 # Dictionary to store user states
 user_states = {}
@@ -41,12 +37,6 @@ async def receive_message(client, message):
             await message.reply_text(reply_text)
             user_states[chat_id]["paragraph"] = ""  # Reset paragraph
 
-# Keep-alive endpoint
-@app.route('/keep-alive', methods=['GET'])
-def keep_alive():
-    return 'Bot is alive!'
-
-# Run Flask app
 if __name__ == '__main__':
-    bot.start()
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))  # Run Flask on specified port or default 5000
+    bot.run()
+    
