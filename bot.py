@@ -24,8 +24,10 @@ async def start_command(_, message):
     await message.reply_text("Send me a paragraph containing links.")
 
 # Handler for receiving messages
-@bot.on_message(filters.private & ~filters.command)
+@bot.on_message(filters.private)
 async def receive_message(client, message):
+    if not message.text or message.text.startswith("/"):
+        return
     chat_id = message.chat.id
     if chat_id in user_states:
         if not user_states[chat_id]["paragraph"]:
@@ -44,7 +46,9 @@ async def receive_message(client, message):
 def keep_alive():
     return 'Bot is alive!'
 
-# Run Flask app and bot
+# Run Flask app and bot using Gunicorn
 if __name__ == '__main__':
-    bot.start()
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))  # Run Flask on specified port or default 5000
+    # Use Gunicorn as the WSGI server with 4 worker processes
+    # You can adjust the number of workers based on your server's resources
+    # For example: gunicorn -w 4 -b 0.0.0.0:5000 bot:app
+    os.system("gunicorn -w 4 -b 0.0.0.0:5000 bot:app")
