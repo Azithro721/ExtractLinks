@@ -1,14 +1,18 @@
 import os
 import re
+from flask import Flask, request
+
 from pyrogram import Client, filters
 
-# Read sensitive information from environment variables
+# Initialize Flask app
+app = Flask(__name__)
+
+# Initialize the bot
 API_ID = os.getenv("API_ID")
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# Initialize the bot
-app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+bot = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 # Dictionary to store user states
 user_states = {}
@@ -17,13 +21,13 @@ user_states = {}
 print("Bot started")
 
 # Handler for /start command
-@app.on_message(filters.command("start"))
+@bot.on_message(filters.command("start"))
 def start_command(_, message):
     user_states[message.chat.id] = {"paragraph": ""}  # Initialize paragraph
     message.reply_text("Send me a paragraph containing links.")
 
 # Handler for receiving messages
-@app.on_message(filters.private)
+@bot.on_message(filters.private)
 def receive_message(client, message):
     if not message.text or message.text.startswith("/"):
         return
@@ -41,5 +45,12 @@ def receive_message(client, message):
             message.reply_text(reply_text)
             user_states[chat_id]["paragraph"] = ""  # Reset paragraph
 
-# Start the bot
-app.run()
+# Keep-alive endpoint
+@app.route('/keep-alive', methods=['GET'])
+def keep_alive():
+    return 'Bot is alive!'
+
+# Run Flask app and bot
+if __name__ == '__main__':
+    bot.run()
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))  # Run Flask on specified port or default 5000
